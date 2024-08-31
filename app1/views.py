@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse, Http404
-
+from django.conf import settings
 from .models import Computer, DefenderEvent, DefenderStatus
 from django.contrib.admin.views.decorators import staff_member_required
 
@@ -165,16 +165,6 @@ def save_defender_events(request, serial):
             )
             # print(defender_event)
 
-            # # Check if the event ID is 1116 and send an email
-            if event_id == 1116:
-                send_mail(
-                    f"Defender alert on {computer.hostname} / {computer.serial}",
-                    f"Event ID: {event_id}\nTimestamp: {timestamp}\n\n{message}\n",
-                    settings.MAIL_FROM,  # sender email
-                    [settings.MAIL_TO],  #   recipient email
-                    fail_silently=False,
-                )
-
             # Event IDs: https://learn.microsoft.com/en-us/defender-endpoint/troubleshoot-microsoft-defender-antivirus
 
             if event_id == 1001:  # MALWAREPROTECTION_SCAN_COMPLETED
@@ -185,6 +175,25 @@ def save_defender_events(request, serial):
                     defender_status.last_quick_scan_ts = timestamp
                 if scan_param == "Full":
                     defender_status.last_full_scan_ts = timestamp
+
+            if event_id == 1116:   # MALWAREPROTECTION_STATE_MALWARE_DETECTED
+                send_mail(
+                    f"Defender alert on {computer.hostname} / {computer.serial}",
+                    f"Event ID: {event_id}\nTimestamp: {timestamp}\n\n{message}\n",
+                    settings.EMAIL_FROM,  # sender email
+                    [settings.EMAIL_TO],  #   recipient email
+                    fail_silently=False,
+                )
+            
+            
+            if event_id == 1121: # Message: Event when an attack surface reduction (ASR) rule fires in block mode.
+                send_mail(
+                    f"Defender alert on {computer.hostname} / {computer.serial}",
+                    f"Event ID: {event_id}\nTimestamp: {timestamp}\n\n{message}\n",
+                    settings.EMAIL_FROM,  # sender email
+                    [settings.EMAIL_TO],  #   recipient email
+                    fail_silently=False,
+                )
 
             # TODO: consider not using this. instead use the API Data from get-mpcomputerstatus which should be more accurate.
             # if event_id == 1150: # MALWAREPROTECTION_SERVICE_HEALTHY

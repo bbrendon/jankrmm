@@ -1,6 +1,7 @@
 from django.core.mail import send_mail
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
 
 
 class Computer(models.Model):
@@ -75,8 +76,8 @@ class DefenderStatus(models.Model):
                 send_mail(
                     f"Defender alert on {self.computer.hostname} / {self.computer.serial}",
                     f"The antivirus mode has changed from {old_instance.antivirus_mode} to {self.antivirus_mode}.",
-                    settings.MAIL_FROM,  # sender email
-                    [setting.MAIL_TO],  #   recipient email
+                    settings.EMAIL_FROM,  # sender email
+                    [settings.EMAIL_TO],  #   recipient email
                     fail_silently=False,
                 )
 
