@@ -117,6 +117,45 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    'formatters': {
+        # 'verbose': {  # Custom formatter for detailed logs
+        #     'format': '{asctime} {levelname} {message}',
+        #     'style': '{',
+        #     'datefmt': '%Y-%m-%d %H:%M:%S',  # Define your preferred date format
+        # },
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {message}",
+            # "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },        
+    },
+    "handlers": {
+        "file": {
+            "class": "logging.FileHandler",
+            'formatter': 'verbose', 
+            'filename': os.path.join(BASE_DIR, 'messages.log'),
+        },
+        "console": {  # Define the console handler
+            "class": "logging.StreamHandler",
+            'formatter': 'verbose',  # Use the custom formatter for the console handler
+
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file", "console"],  # Attach both file and console handlers
+            "propagate": True,
+        },
+    },
+}
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
