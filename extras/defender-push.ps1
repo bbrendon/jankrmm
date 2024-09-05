@@ -1,4 +1,5 @@
 
+# Script lives in git
 
 function SaveToFile {
 
@@ -19,26 +20,26 @@ function SaveToFile {
 
 
 function Test-IsDefenderInstalled {
-    # Return $true if ONLY defender is installed.
+    # Return $true if ONLY defender is installed and working.
+    # Tested on Win11 and server 2022
 
-    # Retrieve all antivirus products
-    $antivirusProducts = Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntivirusProduct
+    # Check the status of the Windows Defender Antivirus Service
+    $defenderService = Get-Service -Name "WinDefend"
 
-    $countProducts = $antivirusProducts | Measure-Object | Select-Object -ExpandProperty Count
-    if ($countProducts -eq 0) {
+    # Write-Host "Windows Defender Antivirus service is running."
+    if ($defenderService.Status -ne 'Running') {
         return $false
     }
-    
-    $returnVal = $true
-    # Check if any of the products DO NOT match the specified name
-    foreach ($product in $antivirusProducts) {
-        if ($product.displayName -notmatch "Defender") {
-            $returnVal = $false
-            break  # Exit the loop once a match is found
-        }
-    }
-    return $returnVal
 
+    # Check if real-time protection is enabled
+    $defenderStatus = Get-MpComputerStatus
+
+    # Write-Host "Windows Defender real-time protection is enabled."
+    if ($defenderStatus.AmRunningMode -ne 'Normal') {
+            return $false
+    }
+
+    return $true
 }
 
 
@@ -206,9 +207,3 @@ if ($events.Count -gt 0 -or $null -ne $Healthy) {
 }
 
  
-
-
-
-
-
-
