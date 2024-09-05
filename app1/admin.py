@@ -3,6 +3,7 @@ from django.conf.locale.en import formats as en_formats
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
+from django.utils.text import Truncator
 
 # Register your models here.
 from .models import Computer, DefenderEvent, DefenderStatus
@@ -18,7 +19,7 @@ class DefenderStatusInline(admin.TabularInline):
 
 class ComputerAdmin(admin.ModelAdmin):
     list_display = (
-        "serial",
+        "truncated_serial",
         "hostname",
         "ip",
         "ip_public",
@@ -29,6 +30,11 @@ class ComputerAdmin(admin.ModelAdmin):
          "view_text_file", 
     )
     inlines = [DefenderStatusInline]  # Add the inline to the Computer admin
+
+    def truncated_serial(self, obj):
+        return Truncator(obj.serial).chars(12)  
+
+    truncated_serial.short_description = "Serial"  # Column name in the admin
 
     def antivirus_mode_status(self, obj):
         defender_status = DefenderStatus.objects.filter(computer=obj).first()
