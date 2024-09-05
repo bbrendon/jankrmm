@@ -131,11 +131,15 @@ def save_defender_events(request, serial):
     try:
         # Parse JSON data from request body
         data = json.loads(request.body)
-        # Find the corresponding Computer instance
-        try:
-            computer = Computer.objects.get(serial=serial)
-        except Computer.DoesNotExist:
-            return JsonResponse({"error": "Computer not found"}, status=404)
+
+        # commented this out -- create the computer (get_or_create) 
+        # # Find the corresponding Computer instance
+        # try:
+        #     computer = Computer.objects.get(serial=serial)
+        # except Computer.DoesNotExist:
+        #     return JsonResponse({"error": "Computer not found"}, status=404)
+
+        computer, created = Computer.objects.get_or_create(serial=serial)
 
         defender_status, created = DefenderStatus.objects.get_or_create(computer=computer)
 

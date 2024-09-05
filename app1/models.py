@@ -27,8 +27,7 @@ class Computer(models.Model):
     # Last full scan  - ? (with timestamp)
 
     def __str__(self):
-        return self.hostname
-
+        return self.hostname or self.serial or "Unnamed Computer"
 
 class DefenderStatus(models.Model):
     ACTIVE_INACTIVE_CHOICES = [
