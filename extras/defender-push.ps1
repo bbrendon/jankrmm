@@ -170,7 +170,7 @@ if ($events.Count -gt 0 -or $null -ne $Healthy) {
         $Healthy = Test-IsDefenderInstalled
     }
 
-    $serial = (Get-WmiObject -Class Win32_BIOS).SerialNumber
+    $serial = (Get-WmiObject -Class Win32_BIOS).SerialNumber  -replace ' ', '_'
     # $url = "https://x.x.com/api1/defender_events/$serial/"
 
     $url = $config.DefenderPushUrl -replace '\$serial', $serial

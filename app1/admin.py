@@ -27,7 +27,7 @@ class ComputerAdmin(admin.ModelAdmin):
         "console_user",
         "last_check_in",
         "antivirus_mode_status",
-         "view_text_file", 
+        "view_text_file", 
     )
     inlines = [DefenderStatusInline]  # Add the inline to the Computer admin
 

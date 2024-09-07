@@ -266,7 +266,7 @@ function Send-ComputerInfoToAPI {
     
     $body = @{
         key          = 'ffa2323b'
-        serial       = (Get-WmiObject -Class Win32_BIOS).SerialNumber
+        serial       = (Get-WmiObject -Class Win32_BIOS).SerialNumber -replace ' ', '_'
         hostname     = ($env:COMPUTERNAME).tolower()
         ip_public    = Invoke-RestMethod -Uri "http://ipv4.icanhazip.com"
         ip           = (Get-NetIPAddress | Where-Object { $_.AddressFamily -eq 'IPv4' -and $_.AddressState -eq 'Preferred' -and $_.IPAddress -notlike '127*' } | Select-Object -First 1 -ExpandProperty IPAddress)
@@ -307,7 +307,7 @@ if ($Option) {
 }
 
 
-$computerSerial = (Get-WmiObject Win32_BIOS).SerialNumber
+$computerSerial = (Get-WmiObject Win32_BIOS).SerialNumber -replace ' ', '_'
 Write-Output "Serial Number: $computerSerial`n"
 Write-Output "Hostname: $env:COMPUTERNAME`n"
 
