@@ -57,18 +57,17 @@ def save_computer_data(request):
         if submitted_key != expected_key:
             return JsonResponse({"error": "Unauthorized"}, status=401)
 
-        # Create a new Computer instance from the parsed data
-        computer = Computer(
-            serial=data.get("serial"),
-            hostname=data.get("hostname"),
-            ip=data.get("ip"),
-            ip_public=data.get("ip_public"),
-            os_version=data.get("os_version"),
-            processor=data.get("processor"),
-            ram=data.get("ram"),
-            storage=data.get("storage"),
-            console_user=data.get("console_user"),
-        )
+        computer, created = Computer.objects.get_or_create(serial=data.get("serial"))
+
+        computer.hostname = data.get("hostname")
+        computer.ip = data.get("ip")
+        computer.ip_public = data.get("ip_public")
+        computer.os_version = data.get("os_version")
+        computer.processor = data.get("processor")
+        computer.ram = data.get("ram")
+        computer.storage = data.get("storage")
+        if data.get("console_user"): computer.console_user = data.get("console_user")
+        computer.last_check_in = timezone.now()
 
         # Save the instance to the database
         computer.save()
@@ -143,6 +142,8 @@ def save_defender_events(request, serial):
 
         defender_status, created = DefenderStatus.objects.get_or_create(computer=computer)
 
+        print (f"Data-events for: {computer}")
+        print(data['events'])
         for i in data["events"]:
             # print(i)
             event_id = i.get("Id")

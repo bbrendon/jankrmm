@@ -14,7 +14,8 @@ class Computer(models.Model):
     processor = models.CharField(max_length=255, null=True)
     ram = models.FloatField(help_text="RAM capacity in MB", null=True)
     storage = models.FloatField(help_text="Disk space in GB", null=True)
-    last_check_in = models.DateTimeField(auto_now=True)
+    last_check_in = models.DateTimeField(null=True, blank=True)
+    # record_modified = models.DateTimeField(auto_now=True)
     console_user = models.CharField(max_length=50, null=True)
 
     # defender_status = JSONField(null=True)
@@ -48,9 +49,7 @@ class DefenderStatus(models.Model):
     engine_ts = models.DateTimeField(null=True, blank=True)
     security_intelligence = models.CharField(max_length=50, null=True, blank=True)
     security_intelligence_ts = models.DateTimeField(null=True, blank=True)
-    # last_quick_scan = models.CharField(max_length=50, null=True, blank=True)
     last_quick_scan_ts = models.DateTimeField(null=True, blank=True)
-    # last_full_scan = models.CharField(max_length=50, null=True, blank=True)
     last_full_scan_ts = models.DateTimeField(null=True, blank=True)
     last_event_ts = models.DateTimeField(null=True, blank=True)
 
