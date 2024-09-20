@@ -6,17 +6,17 @@ from django.conf import settings
 
 class Computer(models.Model):
     serial = models.CharField(max_length=50, primary_key=True)
-    hostname = models.CharField(max_length=50, null=True)
+    hostname = models.CharField(max_length=50, null=True, blank=True)
     ip = models.GenericIPAddressField(null=True)
     ip_public = models.GenericIPAddressField(null=True)
     # operating_system = models.CharField(max_length=255)
-    os_version = models.CharField(max_length=255, null=True)
-    processor = models.CharField(max_length=255, null=True)
-    ram = models.FloatField(help_text="RAM capacity in MB", null=True)
-    storage = models.FloatField(help_text="Disk space in GB", null=True)
+    os_version = models.CharField(max_length=255, null=True, blank=True)
+    processor = models.CharField(max_length=255, null=True, blank=True)
+    ram = models.FloatField(help_text="RAM capacity in MB", null=True, blank=True)
+    storage = models.FloatField(help_text="Disk space in GB", null=True, blank=True)
     last_check_in = models.DateTimeField(null=True, blank=True)
     # record_modified = models.DateTimeField(auto_now=True)
-    console_user = models.CharField(max_length=50, null=True)
+    console_user = models.CharField(max_length=50, null=True, blank=True)
 
     # defender_status = JSONField(null=True)
 
