@@ -35,8 +35,8 @@ function Test-IsDefenderInstalled {
     $defenderStatus = Get-MpComputerStatus
 
     # Write-Host "Windows Defender real-time protection is enabled."
-    if ($defenderStatus.AmRunningMode -ne 'Normal') {
-            return $false
+    if ($defenderStatus.RealTimeProtectionEnabled -eq $False) {
+        return $false
     }
 
     return $true
