@@ -20,12 +20,11 @@ class DefenderStatusInline(admin.TabularInline):
 class ComputerAdmin(admin.ModelAdmin):
     def last_event_ts(self, obj):
         defender_status = DefenderStatus.objects.filter(computer=obj).first()
-        
+
         return defender_status.last_event_ts if defender_status else None
 
     def truncated_serial(self, obj):
-        return Truncator(obj.serial).chars(12)  
-
+        return Truncator(obj.serial).chars(12)
 
     list_display = (
         "truncated_serial",
@@ -37,14 +36,14 @@ class ComputerAdmin(admin.ModelAdmin):
         "last_check_in",
         "last_event_ts",
         "antivirus_mode_status",
-        "view_text_file", 
+        "view_text_file",
     )
 
-            
     inlines = [DefenderStatusInline]  # Add the inline to the Computer admin
 
-
+    last_event_ts.admin_order_field = "defender_status__last_event_ts"
     last_event_ts.short_description = "Defender TS"
+
     truncated_serial.short_description = "Serial"  # Column name in the admin
 
     def antivirus_mode_status(self, obj):
@@ -54,13 +53,12 @@ class ComputerAdmin(admin.ModelAdmin):
     antivirus_mode_status.short_description = "Antivirus"  # Column name in the admin
 
     def view_text_file(self, obj):
-        url = reverse('view_text_file', args=[obj.serial])
+        url = reverse("view_text_file", args=[obj.serial])
         return format_html('<a href="{}" target="_blank">View Text File</a>', url)
 
     view_text_file.short_description = "Text File"  # Column name in the admin
 
     list_per_page = 1000  # Set a high number to disable pagination
-
 
 
 class DefenderStatusAdmin(admin.ModelAdmin):
@@ -81,6 +79,7 @@ class DefenderStatusAdmin(admin.ModelAdmin):
     )
 
     list_per_page = 1000  # Set a high number to disable pagination
+
 
 class DefenderEventAdmin(admin.ModelAdmin):
     list_display = ("computer", "timestamp", "event_id", "message", "severity")
