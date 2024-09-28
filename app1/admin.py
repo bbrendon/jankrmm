@@ -59,6 +59,9 @@ class ComputerAdmin(admin.ModelAdmin):
 
     view_text_file.short_description = "Text File"  # Column name in the admin
 
+    list_per_page = 1000  # Set a high number to disable pagination
+
+
 
 class DefenderStatusAdmin(admin.ModelAdmin):
     # fields to display
@@ -77,6 +80,7 @@ class DefenderStatusAdmin(admin.ModelAdmin):
         "last_full_scan_ts",
     )
 
+    list_per_page = 1000  # Set a high number to disable pagination
 
 class DefenderEventAdmin(admin.ModelAdmin):
     list_display = ("computer", "timestamp", "event_id", "message", "severity")
@@ -84,6 +88,7 @@ class DefenderEventAdmin(admin.ModelAdmin):
         "computer",
         "event_id",
     )
+    list_per_page = 1000  # Set a high number to disable pagination
 
 
 # Register the Computer model with the custom admin class
