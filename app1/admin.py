@@ -53,7 +53,7 @@ class ComputerAdmin(admin.ModelAdmin):
     antivirus_mode_status.short_description = "Antivirus"  # Column name in the admin
 
     def view_text_file(self, obj):
-        url = reverse("view_text_file", args=[obj.serial])
+        url = reverse("view_text_file", args=[obj.hostname])
         return format_html('<a href="{}" target="_blank">View Text File</a>', url)
 
     view_text_file.short_description = "Text File"  # Column name in the admin
@@ -87,7 +87,7 @@ class DefenderEventAdmin(admin.ModelAdmin):
         "computer",
         "event_id",
     )
-    list_per_page = 1000  # Set a high number to disable pagination
+    list_per_page = 200
 
 
 # Register the Computer model with the custom admin class

@@ -4,18 +4,17 @@ import re
 import traceback
 from datetime import datetime
 
-from .utils import send_mail_custom
+from django.contrib.admin.views.decorators import staff_member_required
 
 # Create your views here.
 # views.py
-from django.http import JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from django.http import HttpResponse, Http404
-from django.conf import settings
+
 from .models import Computer, DefenderEvent, DefenderStatus
-from django.contrib.admin.views.decorators import staff_member_required
+from .utils import send_mail_custom
 
 
 def convert_date_string(date_string):
@@ -66,7 +65,8 @@ def save_computer_data(request):
         computer.processor = data.get("processor")
         computer.ram = data.get("ram")
         computer.storage = data.get("storage")
-        if data.get("console_user"): computer.console_user = data.get("console_user")
+        if data.get("console_user"):
+            computer.console_user = data.get("console_user")
         computer.last_check_in = timezone.now()
 
         # Save the instance to the database
@@ -131,7 +131,7 @@ def save_defender_events(request, serial):
         # Parse JSON data from request body
         data = json.loads(request.body)
 
-        # commented this out -- create the computer (get_or_create) 
+        # commented this out -- create the computer (get_or_create)
         # # Find the corresponding Computer instance
         # try:
         #     computer = Computer.objects.get(serial=serial)
@@ -181,8 +181,10 @@ def save_defender_events(request, serial):
                 if scan_param == "Full":
                     defender_status.last_full_scan_ts = timestamp
 
-            if event_id == 1116:   # MALWAREPROTECTION_STATE_MALWARE_DETECTED
-                send_mail_custom(self.computer, f"Event ID: {event_id}\nTimestamp: {timestamp}\n\n{message}\n")
+            if event_id == 1116:  # MALWAREPROTECTION_STATE_MALWARE_DETECTED
+                send_mail_custom(
+                    computer, f"Event ID: {event_id}\nTimestamp: {timestamp}\n\n{message}\n"
+                )
 
                 # send_mail(
                 #     f"Defender alert on {computer.hostname} / {computer.serial}",
@@ -191,13 +193,16 @@ def save_defender_events(request, serial):
                 #     [settings.EMAIL_TO],  #   recipient email
                 #     fail_silently=False,
                 # )
-            
-            
-            if event_id == 1121: # Message: Event when an attack surface reduction (ASR) rule fires in block mode.
+
+            if (
+                event_id == 1121
+            ):  # Message: Event when an attack surface reduction (ASR) rule fires in block mode.
                 print("ASR RULE")
                 # Parse message searching for ASR rule like 3B576869-A4EC-4529-8536-B80A7769E899
 
-                asr_rule_pattern = r"([A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})"
+                asr_rule_pattern = (
+                    r"([A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})"
+                )
                 asr_rule_match = re.search(asr_rule_pattern, message)
                 asr_rule_guid = asr_rule_match.group(1) if asr_rule_match else None
                 # https://learn.microsoft.com/en-us/defender-endpoint/attack-surface-reduction-rules-reference
@@ -223,13 +228,19 @@ def save_defender_events(request, serial):
                     case "3b576869-a4ec-4529-8536-b80a7769e899":
                         rule_name = "Block Office applications from creating executable content"
                     case "75668c1f-73b5-4cf0-bb93-3ecf5cb7cc84":
-                        rule_name = "Block Office applications from injecting code into other processes"
+                        rule_name = (
+                            "Block Office applications from injecting code into other processes"
+                        )
                     case "26190899-1602-49e8-8b27-eb1d0a1ce869":
-                        rule_name = "Block Office communication application from creating child processes"
+                        rule_name = (
+                            "Block Office communication application from creating child processes"
+                        )
                     case "e6db77e5-3df2-4cf1-b95a-636979351e5b":
                         rule_name = "Block persistence through WMI event subscription"
                     case "d1e49aac-8f56-4280-b9ba-993a6d77406c":
-                        rule_name = "Block process creations originating from PSExec and WMI commands"
+                        rule_name = (
+                            "Block process creations originating from PSExec and WMI commands"
+                        )
                     case "33ddedf1-c6e0-47cb-833e-de6133960387":
                         rule_name = "Block rebooting machine in Safe Mode (preview)"
                     case "b2b3f03d-6a65-4f7b-a9c7-1c7ef74a9ba4":
@@ -245,10 +256,12 @@ def save_defender_events(request, serial):
                     case _:
                         rule_name = "Unknown ASR Rule"
 
-                send_mail_custom(self.computer, f"ASR Alert: {rule_name}\n" \
-                        f"ASR Reference: https://learn.microsoft.com/en-us/defender-endpoint/attack-surface-reduction-rules-reference \n" \
-                        f"Event ID: {event_id}\nTimestamp: {timestamp}\n\n{message}\n")
-
+                send_mail_custom(
+                    computer,
+                    f"ASR Alert: {rule_name}\n"
+                    f"ASR Reference: https://learn.microsoft.com/en-us/defender-endpoint/attack-surface-reduction-rules-reference \n"
+                    f"Event ID: {event_id}\nTimestamp: {timestamp}\n\n{message}\n",
+                )
 
                 # send_mail(
                 #     f"Defender alert on {computer.hostname} / {computer.serial}", # subject
@@ -299,9 +312,8 @@ def save_defender_events(request, serial):
                 version = match.group(1)
                 defender_status.platform = version
 
-            if event_id == 3002: # MALWAREPROTECTION_RTP_FEATURE_FAILURE
+            if event_id == 3002:  # MALWAREPROTECTION_RTP_FEATURE_FAILURE
                 defender_status.antivirus_mode = "inactive"
-
 
             if event_id == 5001:  # MALWAREPROTECTION_RTP_DISABLED
                 defender_status.antivirus_mode = "inactive"
@@ -344,12 +356,44 @@ def save_defender_events(request, serial):
 
 
 @staff_member_required
-def view_text_file(request, serial):
-    file_path = os.path.join('uploads', f'{serial}.txt')
+def view_text_file(request, hostname):
+    # file_path = os.path.join("uploads", f"{hostname}.txt")
+    file_path = find_newest_file_with_hostname(hostname)
     if os.path.exists(file_path):
-        with open(file_path, 'r') as file:
-            response = HttpResponse(file.read(), content_type='text/plain')
-            response['Content-Disposition'] = f'inline; filename={serial}.txt'
+        with open(file_path, "r") as file:
+            response = HttpResponse(file.read(), content_type="text/plain")
+            response["Content-Disposition"] = f"inline; filename={hostname}.txt"
             return response
     else:
         raise Http404("File not found")
+
+
+def find_newest_file_with_hostname(hostname):
+    directory = "/srv/jank-rmm/dp/uploads"
+
+    # Create a regular expression pattern to match files with the hostname in it
+    pattern = re.compile(rf".*{hostname}.*\.txt$", re.IGNORECASE)
+
+    # Variable to store the newest file and its modification time
+    newest_file = None
+    newest_time = 0
+
+    # Iterate through the files in the directory
+    for filename in os.listdir(directory):
+        # Full file path
+        file_path = os.path.join(directory, filename)
+
+        # Check if the file matches the pattern and is a file (not a directory)
+        if pattern.match(filename) and os.path.isfile(file_path):
+            # Get the file's modification time
+            file_time = os.path.getmtime(file_path)
+
+            # Check if this file is newer than the previous ones
+            if file_time > newest_time:
+                newest_time = file_time
+                newest_file = filename
+
+    newest_file = directory + "/" + newest_file
+    # Return the newest file found or None if no matching files were found
+    print("ASDFSDFSDF: " + newest_file)
+    return newest_file
