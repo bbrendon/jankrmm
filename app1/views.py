@@ -261,6 +261,7 @@ def save_defender_events(request, serial):
                     f"ASR Alert: {rule_name}\n"
                     f"ASR Reference: https://learn.microsoft.com/en-us/defender-endpoint/attack-surface-reduction-rules-reference \n"
                     f"Event ID: {event_id}\nTimestamp: {timestamp}\n\n{message}\n",
+                    type="asr",
                 )
 
                 # send_mail(

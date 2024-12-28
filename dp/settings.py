@@ -10,10 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
-from pathlib import Path
-import environ
 import os
+from pathlib import Path
 
+import environ
 
 env = environ.Env(
     # set casting, default value
@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # reading .env file  (pip install django-environ)
 # Take environment variables from .env file
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 
 # Quick-start development settings - unsuitable for production
@@ -34,8 +34,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # SECRET_KEY = "django-insecure-irbgon*o4lc8xl)k=(-u9es+6=g&!zinuc(qjr00!zhn*z0i%q"
-SECRET_KEY = env('SECRET_KEY')
-
+SECRET_KEY = env("SECRET_KEY")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -117,44 +116,44 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    'formatters': {
-        # 'verbose': {  # Custom formatter for detailed logs
-        #     'format': '{asctime} {levelname} {message}',
-        #     'style': '{',
-        #     'datefmt': '%Y-%m-%d %H:%M:%S',  # Define your preferred date format
-        # },
-        "verbose": {
-            "format": "{levelname} {asctime} {module} {message}",
-            # "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
-            "style": "{",
-        },
-        "simple": {
-            "format": "{levelname} {message}",
-            "style": "{",
-        },        
-    },
-    "handlers": {
-        "file": {
-            "class": "logging.FileHandler",
-            'formatter': 'verbose', 
-            'filename': os.path.join(BASE_DIR, 'messages.log'),
-        },
-        "console": {  # Define the console handler
-            "class": "logging.StreamHandler",
-            'formatter': 'verbose',  # Use the custom formatter for the console handler
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     'formatters': {
+#         # 'verbose': {  # Custom formatter for detailed logs
+#         #     'format': '{asctime} {levelname} {message}',
+#         #     'style': '{',
+#         #     'datefmt': '%Y-%m-%d %H:%M:%S',  # Define your preferred date format
+#         # },
+#         "verbose": {
+#             "format": "{levelname} {asctime} {module} {message} {exc_info}",
+#             # "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+#             "style": "{",
+#         },
+#         "simple": {
+#             "format": "{levelname} {message}",
+#             "style": "{",
+#         },
+#     },
+#     "handlers": {
+#         "file": {
+#             "class": "logging.FileHandler",
+#             'formatter': 'verbose',
+#             'filename': os.path.join(BASE_DIR, 'messages.log'),
+#         },
+#         "console": {  # Define the console handler
+#             "class": "logging.StreamHandler",
+#             'formatter': 'verbose',  # Use the custom formatter for the console handler
 
-        },
-    },
-    "loggers": {
-        "django": {
-            "handlers": ["file", "console"],  # Attach both file and console handlers
-            "propagate": True,
-        },
-    },
-}
+#         },
+#     },
+#     "loggers": {
+#         "django": {
+#             "handlers": ["file", "console"],  # Attach both file and console handlers
+#             "propagate": True,
+#         },
+#     },
+# }
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
@@ -180,12 +179,14 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = '10.1.1.20'  
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "10.1.1.20"
 EMAIL_PORT = 25
 EMAIL_USE_TLS = False
 # EMAIL_HOST_USER = 'your_email@example.com'
 # EMAIL_HOST_PASSWORD = 'your_email_password'
 
-EMAIL_FROM = env('EMAIL_FROM')
-EMAIL_TO = env('EMAIL_TO')
+EMAIL_FROM = env("EMAIL_FROM")
+EMAIL_TO = env("EMAIL_TO")
+# In settings.py
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
