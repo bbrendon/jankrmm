@@ -17,6 +17,7 @@ class Computer(models.Model):
     last_check_in = models.DateTimeField(null=True, blank=True)
     # record_modified = models.DateTimeField(auto_now=True)
     console_user = models.CharField(max_length=50, null=True, blank=True)
+    laps = models.CharField(help_text="Local Admin Password", max_length=50, null=True, blank=True)
 
     # defender_status = JSONField(null=True)
 

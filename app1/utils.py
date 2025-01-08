@@ -1,10 +1,9 @@
-# email_utils.py
 from django.conf import settings
 from django.core.mail import send_mail
 
 
 # def send_mail(subject, message, recipient_list, fail_silently=False):
-def send_mail_custom(computer, message, type="generic"):
+def send_mail_custom(computer, message: str, type: str = "generic"):
     """
     Wrapper for Django's send_mail function.
 

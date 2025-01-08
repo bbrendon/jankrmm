@@ -8,7 +8,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 
 # Create your views here.
 # views.py
-from django.http import Http404, HttpResponse, JsonResponse
+from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -28,7 +28,7 @@ def convert_date_string(date_string):
 
 
 @csrf_exempt
-def upload_file(request):
+def upload_file(request: HttpRequest) -> JsonResponse:
     if request.method == "POST" and request.FILES:
         uploaded_file = request.FILES["file"]
         # file_path = os.path.join("path", "to", "your", "directory", uploaded_file.name)
@@ -44,7 +44,7 @@ def upload_file(request):
 
 @csrf_exempt
 @require_http_methods(["POST"])  # Ensures only POST requests are handled
-def save_computer_data(request):
+def save_computer_data(request: JsonResponse) -> JsonResponse:
     print("asdf")
     try:
         # Parse JSON data from request body
@@ -65,8 +65,11 @@ def save_computer_data(request):
         computer.processor = data.get("processor")
         computer.ram = data.get("ram")
         computer.storage = data.get("storage")
-        if data.get("console_user"):
-            computer.console_user = data.get("console_user")
+        # if data.get("console_user"):
+        #     computer.console_user = data.get("console_user")
+        computer.console_user = data.get("console_user", computer.console_user)
+        computer.laps = data.get("laps", computer.laps)
+
         computer.last_check_in = timezone.now()
 
         # Save the instance to the database
@@ -82,7 +85,7 @@ def save_computer_data(request):
 
 @csrf_exempt
 @require_http_methods(["POST"])
-def save_defender_status(request, serial):
+def save_defender_status(request: HttpRequest, serial: str) -> JsonResponse:
     try:
         # Parse JSON data from request body
         data = json.loads(request.body)
@@ -123,7 +126,7 @@ def save_defender_status(request, serial):
 
 @csrf_exempt
 @require_http_methods(["POST"])
-def save_defender_events(request, serial):
+def save_defender_events(request: HttpRequest, serial: str) -> JsonResponse:
     # This function should probably be called "process defender data"
     # It no longer is just for events but also health status.
 
@@ -357,7 +360,7 @@ def save_defender_events(request, serial):
 
 
 @staff_member_required
-def view_text_file(request, hostname):
+def view_text_file(request: HttpRequest, hostname: str) -> HttpResponse:
     # file_path = os.path.join("uploads", f"{hostname}.txt")
     file_path = find_newest_file_with_hostname(hostname)
     if os.path.exists(file_path):
