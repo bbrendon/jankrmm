@@ -5,6 +5,7 @@ import traceback
 from datetime import datetime
 
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 # Create your views here.
 # views.py
@@ -12,9 +13,12 @@ from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from django.views.generic import ListView
 
 from .models import Computer, DefenderEvent, DefenderStatus
 from .utils import send_mail_custom
+
+# from .models import Computer
 
 
 def convert_date_string(date_string):
@@ -156,7 +160,7 @@ def save_defender_events(request: HttpRequest, serial: str) -> JsonResponse:
 
             current_ts_formatted = timezone.localtime(timezone.now()).strftime("%Y-%m-%d %H:%M:%S")
             print(
-                f"{ current_ts_formatted } / {computer.hostname} / {computer.serial} / {event_id} / evt_ts: {timestamp}"
+                f"{current_ts_formatted} / {computer.hostname} / {computer.serial} / {event_id} / evt_ts: {timestamp}"
             )
 
             # if event_id == 1001:
@@ -361,6 +365,9 @@ def save_defender_events(request: HttpRequest, serial: str) -> JsonResponse:
 
 @staff_member_required
 def view_text_file(request: HttpRequest, hostname: str) -> HttpResponse:
+    # if not hostname:
+    #     return HttpResponse("No hostname provided", content_type="text/plain", status=400)
+
     # file_path = os.path.join("uploads", f"{hostname}.txt")
     file_path = find_newest_file_with_hostname(hostname)
     if os.path.exists(file_path):
@@ -401,3 +408,9 @@ def find_newest_file_with_hostname(hostname):
     # Return the newest file found or None if no matching files were found
     print("ASDFSDFSDF: " + newest_file)
     return newest_file
+
+
+class ComputerListView(LoginRequiredMixin, ListView):
+    model = Computer
+    template_name = "app1/computer_list.html"
+    context_object_name = "computers"
