@@ -1,3 +1,5 @@
+from auditlog.registry import auditlog
+from django.core.validators import RegexValidator
 from django.db import models
 from django.utils import timezone
 
@@ -5,19 +7,58 @@ from .utils import send_mail_custom
 
 
 class Computer(models.Model):
-    serial = models.CharField(max_length=50, primary_key=True)
-    hostname = models.CharField(max_length=50, null=True, blank=True)
-    ip = models.GenericIPAddressField(null=True)
-    ip_public = models.GenericIPAddressField(null=True)
-    # operating_system = models.CharField(max_length=255)
-    os_version = models.CharField(max_length=255, null=True, blank=True)
-    processor = models.CharField(max_length=255, null=True, blank=True)
-    ram = models.FloatField(help_text="RAM capacity in MB", null=True, blank=True)
-    storage = models.FloatField(help_text="Disk space in GB", null=True, blank=True)
-    last_check_in = models.DateTimeField(null=True, blank=True)
-    # record_modified = models.DateTimeField(auto_now=True)
-    console_user = models.CharField(max_length=50, null=True, blank=True)
-    laps = models.CharField(help_text="Local Admin Password", max_length=50, null=True, blank=True)
+    STATUS_CHOICES = [
+        ("CHANGE_ME", "Change Me"),  # unset status
+        ("PREPPED", "Prepped"),
+        ("ASSIGNED", "Assigned"),
+        ("TERMED_NOT_RETURNED", "Termed Not Returned"),
+        ("RETIRED", "Retired"),
+        ("IT_STORAGE", "IT Storage"),
+        ("WAITING_RETURN", "Waiting for Return"),
+        ("LOCATION_UNKNOWN", "Location Unknown"),
+    ]
+
+    serial: models.CharField = models.CharField(
+        max_length=60,
+        primary_key=True,
+        validators=[
+            RegexValidator(
+                regex=r"^[a-zA-Z0-9_-]+$",
+                message="Serial must be alphanumeric and can only contain _, -",
+            )
+        ],
+    )
+    hostname: models.CharField = models.CharField(max_length=50, null=True, blank=True)
+    ip: models.CharField = models.CharField(max_length=255, null=True, blank=True)
+    ip_public: models.GenericIPAddressField = models.GenericIPAddressField(null=True, blank=True)
+    os_version: models.CharField = models.CharField(max_length=255, null=True, blank=True)
+    processor: models.CharField = models.CharField(max_length=255, null=True, blank=True)
+    ram: models.FloatField = models.FloatField(
+        help_text="RAM capacity in MB", null=True, blank=True
+    )
+    storage: models.FloatField = models.FloatField(
+        help_text="Disk space in GB", null=True, blank=True
+    )
+    last_check_in: models.DateTimeField = models.DateTimeField(null=True, blank=True)
+    # record_modified: models.DateTimeField = models.DateTimeField(auto_now=True)
+    console_user: models.CharField = models.CharField(max_length=50, null=True, blank=True)
+    laps: models.CharField = models.CharField(
+        help_text="Local Admin Password", max_length=50, null=True, blank=True
+    )
+    asset_tag: models.CharField = models.CharField(max_length=50, null=True, blank=True)
+    status: models.CharField = models.CharField(
+        max_length=30,
+        choices=STATUS_CHOICES,
+        default="CHANGE_ME",
+    )
+    warranty_exp: models.DateField = models.DateField(null=True, blank=True)
+    assigned_user: models.CharField = models.CharField(max_length=50, null=True, blank=True)
+    assigned_date: models.DateField = models.DateField(null=True, blank=True)
+    encryption_enabled: models.BooleanField = models.BooleanField(
+        verbose_name="Encrypted", null=True, default=None
+    )
+    encryption_key: models.TextField = models.TextField(null=True, blank=True)
+    notes: models.TextField = models.TextField(null=True, blank=True)
 
     # defender_status = JSONField(null=True)
 
@@ -115,3 +156,6 @@ class DefenderEvent(models.Model):
 
     def __str__(self):
         return f"{self.computer.serial} / {self.computer.hostname} / {self.timestamp} / {self.event_id}"
+
+
+auditlog.register(Computer, include_fields=["status", "assigned_user"])
