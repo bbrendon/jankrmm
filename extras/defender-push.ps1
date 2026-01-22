@@ -1,5 +1,5 @@
 
-# Script lives in git
+# Script lives in jank-rmm public git repo
 
 function SaveToFile {
 
@@ -63,7 +63,7 @@ $currentTS = (Get-Date).ToUniversalTime()
 if ($varsFile.LastMpStatusTS) {
     $lastMpStatusTS = [DateTime]::Parse($varsFile.lastMpStatusTS)
 } else {
-    $lastMpStatusTS = $currentTS.AddDays(-7)
+    $lastMpStatusTS = $currentTS.AddDays(-3)
 }
 
 #################################################

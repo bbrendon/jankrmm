@@ -1,6 +1,10 @@
-# from django.utils.timezone import localtime
+import csv
+from datetime import datetime
+
 from django.conf.locale.en import formats as en_formats
 from django.contrib import admin
+from django.db.models.functions import Lower  # Add this import at the top
+from django.http import HttpResponse
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.text import Truncator
@@ -18,26 +22,126 @@ class DefenderStatusInline(admin.TabularInline):
 
 
 class ComputerAdmin(admin.ModelAdmin):
+    class Media:
+        js = ('admin/js/collapsible_filters.js',)
+
+    def export_as_csv(self, request, queryset):
+        meta = self.model._meta
+        excluded_fields = ["laps", "encryption_key"]
+        field_names = [
+            field.name for field in meta.fields if field.name not in excluded_fields
+        ]
+
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = (
+            f"attachment; filename=selected_computers_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        )
+        writer = csv.writer(response)
+
+        writer.writerow(field_names)
+        for obj in queryset:
+            row = []
+            for field in field_names:
+                value = getattr(obj, field)
+                row.append(str(value) if value is not None else "")
+            writer.writerow(row)
+
+        return response
+
+    export_as_csv.short_description = "Export Selected as CSV"
+
+    actions = ["export_as_csv"]
+
     def last_event_ts(self, obj):
         defender_status = DefenderStatus.objects.filter(computer=obj).first()
-
         return defender_status.last_event_ts if defender_status else None
 
     def truncated_serial(self, obj):
         return Truncator(obj.serial).chars(12)
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # Always annotate with case-insensitive version
+        return qs.annotate(asset_tag_lower=Lower("asset_tag"))
+
+    def asset_tag_insensitive(self, obj):
+        return obj.asset_tag
+
+    asset_tag_insensitive.admin_order_field = "asset_tag_lower"
+    asset_tag_insensitive.short_description = "Asset Tag"
     list_display = (
         "truncated_serial",
+        # "asset_tag",
+        "asset_tag_insensitive",
         "hostname",
-        "ip",
-        "ip_public",
-        "os_version",
+        "status",
+        "assigned_user",
         "console_user",
+        # "ip",
+        # "ip_public",
+        "os_version",
         "last_check_in",
         "last_event_ts",
         "antivirus_mode_status",
+        "encryption_enabled",
         "view_text_file",
     )
+    # list_editable = ('status',)  # Makes 'status' editable as a dropdown
+    search_fields = (
+        "serial",
+        "hostname",
+        "ip",
+        "ip_public",
+        "console_user",
+        "asset_tag",
+        "assigned_user",
+        "encryption_key",
+        "notes",
+        "status",
+    )
+
+    list_filter = (
+        "status",
+        "encryption_enabled",
+    )
+
+    fieldsets = (
+        (
+            "Common Fields",
+            {
+                "fields": (
+                    "asset_tag",
+                    "status",
+                    "assigned_user",
+                    "assigned_date",
+                )
+            },
+        ),
+        (
+            "Other Fields",
+            {
+                "fields": (
+                    "serial",
+                    "console_user",
+                    "hostname",
+                    "ip",
+                    "ip_public",
+                    "os_version",
+                    "processor",
+                    "ram",
+                    "storage",
+                    "laps",
+                    "encryption_enabled",
+                    "encryption_key",
+                    "notes",
+                    "last_check_in",
+                    "warranty_exp",
+                )
+            },
+        ),
+    )
+
+    save_on_top = True  # Adds save buttons at both the top and bottom
 
     inlines = [DefenderStatusInline]  # Add the inline to the Computer admin
 
@@ -54,7 +158,7 @@ class ComputerAdmin(admin.ModelAdmin):
 
     def view_text_file(self, obj):
         url = reverse("view_text_file", args=[obj.hostname])
-        return format_html('<a href="{}" target="_blank">View Text File</a>', url)
+        return format_html('<a href="{}" target="_blank">View</a>', url)
 
     view_text_file.short_description = "Text File"  # Column name in the admin
 
@@ -82,7 +186,18 @@ class DefenderStatusAdmin(admin.ModelAdmin):
 
 
 class DefenderEventAdmin(admin.ModelAdmin):
-    list_display = ("computer", "timestamp", "event_id", "message", "severity")
+    def truncated_computer(self, obj):
+        return Truncator(obj.computer).chars(12)
+
+    truncated_computer.short_description = "Hostname"  # Column name in the admin
+
+    list_display = (
+        "truncated_computer",
+        "timestamp",
+        "event_id",
+        "message",
+        "severity",
+    )
     list_filter = (
         "computer",
         "event_id",

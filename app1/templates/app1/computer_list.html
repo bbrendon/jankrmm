@@ -1,39 +1,42 @@
-{% extends 'base.html' %}
+<!-- {% extends 'base.html' %} -->
 
 {% block content %}
+
 <div class="container-fluid mt-1">
-    <h2>Computers List</h2>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Serial</th>
-                <th>Hostname</th>
-                <th>IP</th>
-                <th>Public IP</th>
-                <th>OS Version</th>
-                <th>Processor</th>
-                <th>RAM (MB)</th>
-                <th>Storage (GB)</th>
-                <th>Last Check-in</th>
-                <th>Console User</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for computer in computers %}
-            <tr>
-                <td>{{ computer.serial }}</td>
-                <td>{{ computer.hostname }}</td>
-                <td>{{ computer.ip }}</td>
-                <td>{{ computer.ip_public }}</td>
-                <td>{{ computer.os_version }}</td>
-                <td>{{ computer.processor }}</td>
-                <td>{{ computer.ram }}</td>
-                <td>{{ computer.storage }}</td>
-                <td>{{ computer.last_check_in }}</td>
-                <td>{{ computer.console_user }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <!-- <h2>Computers List</h2> -->
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead class="thead-sticky">
+                <tr>
+                    <th>Serial</th>
+                    <th>Hostname</th>
+                    <th>IP</th>
+                    <th>Public IP</th>
+                    <th>OS Version</th>
+                    <th>Processor</th>
+                    <th>RAM (MB)</th>
+                    <th>Storage (GB)</th>
+                    <th>Last Check-in</th>
+                    <th>Console User</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for computer in computers %}
+                <tr>
+                    <td>{{ computer.serial }}</td>
+                    <td>{{ computer.hostname }}</td>
+                    <td>{{ computer.ip }}</td>
+                    <td>{{ computer.ip_public }}</td>
+                    <td>{{ computer.os_version }}</td>
+                    <td>{{ computer.processor }}</td>
+                    <td>{{ computer.ram }}</td>
+                    <td>{{ computer.storage }}</td>
+                    <td>{{ computer.last_check_in }}</td>
+                    <td>{{ computer.console_user }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}
