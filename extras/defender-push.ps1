@@ -85,13 +85,15 @@ if ($timeDifference.TotalMinutes -ge 30) {
 
     # Check if all properties are set to True
     $allTrue = $MpComputerStatusTrue.PSObject.Properties.Value -eq $true -notcontains $false
-    
-    # Output any properties that are not set to True
-    # $MpComputerStatusTrue.PSObject.Properties | Where-Object { $_.Value -ne $true } | ForEach-Object { 
-    #     Write-Output "$($_.Name) is set to $($_.Value)" 
-    # }
-    
-    
+
+    # Retry if unhealthy - might be transient during signature/engine update
+    if (-not $allTrue) {
+        Write-Output "Initial check failed, waiting 60s to retry..."
+        Start-Sleep -Seconds 60
+        $MpComputerStatusTrue = Get-MpComputerStatus | Select-Object -Property AMServiceEnabled, AntispywareEnabled, AntivirusEnabled, BehaviorMonitorEnabled, IoavProtectionEnabled, IsTamperProtected, NISEnabled, OnAccessProtectionEnabled, RealTimeProtectionEnabled
+        $allTrue = $MpComputerStatusTrue.PSObject.Properties.Value -eq $true -notcontains $false
+    }
+
     # Output the overall result
     if ($allTrue) {
         Write-Output "All properties are set to True"
